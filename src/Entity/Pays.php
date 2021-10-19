@@ -24,12 +24,17 @@ class Pays
      */
     private $nom;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $inscription;
+  /**
+   * @ORM\OneToMany(targetEntity="App\Entity\Utilisateur", mappedBy="pays")
+   */
+  private $utilisateurs;
 
-    public function getId(): ?int
+  public function __construct()
+  {
+    $this->utilisateurs = new ArrayCollection();
+  }
+
+  public function getId(): ?int
     {
         return $this->id;
     }
@@ -46,27 +51,6 @@ class Pays
         return $this;
     }
 
-    public function getInscription(): ?string
-    {
-        return $this->inscription;
-    }
-
-    public function setInscription(string $inscription): self
-    {
-        $this->inscription = $inscription;
-
-        return $this;
-    }
-
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Utilisateur", mappedBy="pays")
-     */
-    private $utilisateurs;
-
-    public function __construct()
-    {
-        $this->utilisateurs = new ArrayCollection();
-    }
 
     /**
      * @return Collection|Utilisateur[]
@@ -75,4 +59,13 @@ class Pays
     {
         return $this->utilisateurs;
     }
+
+  /**
+   * @param ArrayCollection $utilisateurs
+   */
+  public function setUtilisateurs(ArrayCollection $utilisateurs): void
+  {
+    $this->utilisateurs = $utilisateurs;
+  }
+
 }

@@ -23,21 +23,13 @@ class UtilisateurController extends AbstractController
      */
     public function index(UtilisateurRepository $utilisateurRepository, Session $session): Response
     {
-        //besoin de droits admin
-        $utilisateur = $this->getUser();
-        if(!$utilisateur)
-        {
-            $session->set("message", "Merci de vous connecter");
-            return $this->redirectToRoute('app_login');
-        }
 
-        else if(in_array('ROLE_ADMIN', $utilisateur->getRoles())){
-            return $this->render('utilisateur/index.html.twig', [
+      $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+      return $this->render('utilisateur/index.html.twig', [
                 'utilisateurs' => $utilisateurRepository->findAll(),
             ]);
-        }
 
-        return $this->redirectToRoute('home');
     }
 
     /**
@@ -45,16 +37,13 @@ class UtilisateurController extends AbstractController
      */
     public function new(Request $request, UserPasswordHasherInterface $passwordHasher, Session $session): Response
     {
-        //test de sécurité, un utilisateur connecté ne peut pas s'inscrire
-        $utilisateur = $this->getUser();
-        if($utilisateur)
-        {
-            $session->set("message", "Vous ne pouvez pas créer un compte lorsque vous êtes connecté");
-            return $this->redirectToRoute('membre');
-        }
+
+      $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
         $utilisateur = new Utilisateur();
         $form = $this->createForm(UtilisateurType::class, $utilisateur);
+
+        $utilisateur->setPays($this->getUser()->getPays());
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -63,8 +52,8 @@ class UtilisateurController extends AbstractController
                 $passwordHasher->hashPassword($utilisateur, $utilisateur->getPassword()));
 
             // uniquement pour créer un admin
-            $role = ['ROLE_ADMIN'];
-            $utilisateur->setRoles($role);
+            // $role = ['ROLE_ADMIN'];
+            // $utilisateur->setRoles($role);
 
             $entityManager->persist($utilisateur);
             $entityManager->flush();
@@ -83,10 +72,17 @@ class UtilisateurController extends AbstractController
      */
     public function show(Utilisateur $utilisateur): Response
     {
-        //accès géré dans le security.yaml
+        // voir fichier config security.yaml
+       //  $this->denyAccessUnlessGranted('ROLE_USER');
+
+      if( ($this->getUser()->getUserIdentifier()===$utilisateur->getUserIdentifier())
+        || in_array("ROLE_ADMIN", $this->getUser()->getRoles()))
+      {
         return $this->render('utilisateur/show.html.twig', [
-            'utilisateur' => $utilisateur,
+          'utilisateur' => $utilisateur,
         ]);
+      }
+      return $this->redirectToRoute("home");
     }
 
     /**
@@ -98,7 +94,7 @@ class UtilisateurController extends AbstractController
         if($utilisateur->getId() != $id )
         {
             // un utilisateur ne peut pas en modifier un autre
-            $session->set("message", "Vous ne pouvez pas modifier cet utilisateur");
+            $this->addFlash("message", "Vous ne pouvez pas modifier cet utilisateur");
             return $this->redirectToRoute('membre');
         }
         $form = $this->createForm(UtilisateurType::class, $utilisateur);
@@ -127,7 +123,7 @@ class UtilisateurController extends AbstractController
         if($utilisateur->getId() != $id )
         {
             // un utilisateur ne peut pas en supprimer un autre
-            $session->set("message", "Vous ne pouvez pas supprimer cet utilisateur");
+          $this->addFlash("message", "Vous ne pouvez pas supprimer cet utilisateur");
             return $this->redirectToRoute('membre');
         }
 

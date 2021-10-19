@@ -17,7 +17,7 @@
             <a class="btn btn-outline-warning" href="{{ path('admin') }}">Page admin</a>
         {% endif %}
         <div>
-            Bonjour {{ app.user.username }} <a class="btn btn-sm btn-danger" href="{{ path('app_logout') }}">Déconnexion</a>
+            Bonjour {{ app.user.userIdentifier }} <a class="btn btn-sm btn-danger" href="{{ path('app_logout') }}">Déconnexion</a>
         </div>
     {% else %}
         <div>
@@ -27,11 +27,12 @@
     {% endif %}
 </nav>
 <div class="container">
-    {% if message is defined %}
+    {% for message in app.flashes('message') %}
         <div class="alert alert-danger">
             {{ message }}
         </div>
-    {% endif %}
+    {% endfor %}
+
     {% block body %}
     {% endblock %}
 </div>
