@@ -38,9 +38,6 @@ security:
     access_control:
         - { path: ^/logout, roles: ROLE_USER }
 
-        # permet de rendre la route /new accessible pour les utilisateurs anonymes (non connecté)
-        - { path: ^/utilisateur/new, roles: IS_AUTHENTICATED_ANONYMOUSLY }
-
         # bloque toutes les routes commençant par /utilisateur sauf la ligne du dessus
         - { path: ^/utilisateur, roles: ROLE_USER }
-        - { path: ^/membre, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/membre, roles: ROLE_USER }

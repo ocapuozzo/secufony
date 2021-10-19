@@ -13,8 +13,7 @@ class NavigationController extends AbstractController
      */
     public function home()
     {
-        $return = [];
-        return $this->render('navigation/home.html.twig', $return);
+        return $this->render('navigation/home.html.twig');
     }
 
     /**
@@ -22,9 +21,8 @@ class NavigationController extends AbstractController
      */
     public function membre()
     {
-      $this->denyAccessUnlessGranted('ROLE_USER');
-        $return = [];
-        return $this->render('navigation/membre.html.twig', $return);
+      // $this->denyAccessUnlessGranted('ROLE_USER');
+      return $this->render('navigation/membre.html.twig');
     }
 
     /**

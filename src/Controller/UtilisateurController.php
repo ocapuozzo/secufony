@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Utilisateur;
 use App\Form\UtilisateurType;
 use App\Repository\UtilisateurRepository;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -70,7 +71,7 @@ class UtilisateurController extends AbstractController
     /**
      * @Route("/{id}", name="utilisateur_show", methods={"GET"})
      */
-    public function show(Utilisateur $utilisateur): Response
+    public function show(Utilisateur $utilisateur, LoggerInterface $logger): Response
     {
         // voir fichier config security.yaml
        //  $this->denyAccessUnlessGranted('ROLE_USER');
@@ -82,18 +83,22 @@ class UtilisateurController extends AbstractController
           'utilisateur' => $utilisateur,
         ]);
       }
+      $logger->info('User url hack attempt show (' . $this->getUser()->getUserIdentifier() . ') (hacked user id : ' .$utilisateur->getId());
+      $this->addFlash("message", "Opération interdite");
+
       return $this->redirectToRoute("home");
     }
 
     /**
      * @Route("/{id}/edit", name="utilisateur_edit", methods={"GET","POST"})
      */
-    public function edit(Request $request, Utilisateur $utilisateur,  UserPasswordHasherInterface $passwordHasher, Session $session, $id): Response
+    public function edit(Request $request, Utilisateur $utilisateur,  UserPasswordHasherInterface $passwordHasher, LoggerInterface $logger): Response
     {
         $utilisateur = $this->getUser();
-        if($utilisateur->getId() != $id )
+        if($this->getUser()->getUserIdentifier() !== $utilisateur->getUserIdentifier() )
         {
             // un utilisateur ne peut pas en modifier un autre
+            $logger->info('User url hack attempt edit (' . $this->getUser()->getUserIdentifier() . ') (hacked user id : ' .$utilisateur->getId());
             $this->addFlash("message", "Vous ne pouvez pas modifier cet utilisateur");
             return $this->redirectToRoute('membre');
         }
@@ -117,14 +122,15 @@ class UtilisateurController extends AbstractController
     /**
      * @Route("/{id}", name="utilisateur_delete", methods={"POST"})
      */
-    public function delete(Request $request, Utilisateur $utilisateur, Session $session, $id): Response
+    public function delete(Request $request, Utilisateur $utilisateur,LoggerInterface $logger): Response
     {
-        $utilisateur = $this->getUser();
-        if($utilisateur->getId() != $id )
+
+        if($this->getUser()->getUserIdentifier() !== $utilisateur->getUserIdentifier() )
         {
             // un utilisateur ne peut pas en supprimer un autre
-          $this->addFlash("message", "Vous ne pouvez pas supprimer cet utilisateur");
-            return $this->redirectToRoute('membre');
+           $this->addFlash("message", "Vous ne pouvez pas supprimer cet utilisateur");
+           $logger->info('User url hack attempt delete (' . $this->getUser()->getUserIdentifier() . ') (hacked user id : ' .$utilisateur->getId());
+           return $this->redirectToRoute('membre');
         }
 
         if ($this->isCsrfTokenValid('delete'.$utilisateur->getId(), $request->request->get('_token')))
