@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Session\Session;
 class SecurityController extends AbstractController
 {
     /**
-     * @Route("/login", name="app_login")
+     * @Route("/login", name="login")
      */
     public function login(AuthenticationUtils $authenticationUtils, Session $session): Response
     {
@@ -21,19 +21,13 @@ class SecurityController extends AbstractController
 
         // get the login error if there is one
         $error = $authenticationUtils->getLastAuthenticationError();
+
         // last username entered by the user
         $lastUsername = $authenticationUtils->getLastUsername();
 
-        $return = ['last_username' => $lastUsername, 'error' => $error];
+        $toView = ['last_username' => $lastUsername, 'error' => $error];
 
-        if($session->has('message'))
-        {
-            $message = $session->get('message');
-            $session->remove('message'); //on vide la variable message dans la session
-            $return['message'] = $message; //on ajoute à l'array de paramètres notre message
-        }
-
-        return $this->render('security/login.html.twig', $return);
+        return $this->render('security/login.html.twig', $toView);
     }
 
     /**
